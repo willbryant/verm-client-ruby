@@ -12,6 +12,10 @@ module Verm
     end
 
     def store(directory, io_or_data, content_type, encoding: nil)
+      if %w(application/gzip application/x-gzip).include?(content_type) && encoding.nil?
+        raise ArgumentError, "Pass the real content-type and encoding: 'gzip' for gzipped uploads" # see 'File compression' in README.md
+      end
+
       directory = "/#{directory}" unless directory[0] == '/'
       request = Net::HTTP::Post.new(directory, 'Content-Type' => content_type)
       request['Content-Encoding'] = encoding.to_s if encoding
