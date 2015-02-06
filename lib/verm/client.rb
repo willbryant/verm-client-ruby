@@ -2,6 +2,10 @@ require 'net/http'
 
 module Verm
   class Client
+    def self.incompressible_types
+      @incompressible_types ||= %w(image/jpeg image/png image/gif)
+    end
+
     attr_reader :http_client
 
     def initialize(hostname, port: 3404, timeout: 15)
@@ -11,9 +15,13 @@ module Verm
       @http_client.ssl_timeout = timeout
     end
 
-    def store(directory, io_or_data, content_type, encoding: nil)
+    def store(directory, io_or_data, content_type, encoding: nil, autocompress: true)
       if %w(application/gzip application/x-gzip).include?(content_type) && encoding.nil?
         raise ArgumentError, "Pass the real content-type and encoding: 'gzip' for gzipped uploads" # see 'File compression' in README.md
+      end
+
+      if autocompress && encoding.nil? && !self.class.incompressible_types.include?(content_type)
+        io_or_data, encoding = compress(io_or_data)
       end
 
       directory = "/#{directory}" unless directory[0] == '/'
@@ -58,6 +66,22 @@ module Verm
           yield chunk
         end
       end
+    end
+
+  protected
+    def compress(io_or_data)
+      if io_or_data.respond_to?(:read) # we don't know how to implement compression for streaming because net/http wants readers not writers :(
+        return io_or_data
+      end
+
+      compressed = StringIO.new
+      compressed.set_encoding("BINARY")
+      gz = Zlib::GzipWriter.new(compressed)
+      gz.write(io_or_data)
+      gz.close
+      output = compressed.string
+      return output, "gzip" if output.bytesize < io_or_data.bytesize
+      io_or_data
     end
   end
 end

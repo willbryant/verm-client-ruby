@@ -52,6 +52,20 @@ class TestVerm < Minitest::Test
     end
   end
 
+  def test_stores_compressed_files_if_given_compressible_but_uncompressed_content
+    content, type = "repetitive auto-compressible data"*10, "text/plain"
+    location = @client.store("/autocompress/", content, type)
+    assert_equal [content, type], @client.load(location) # will get auto-decompressed by ruby; proves just that the content was stored
+    refute_equal [content, type], @client.load(location, 'Accept-Encoding' => 'gzip') # setting an explicit Accept-Encoding turns off auto-decompress; the result would not be useful for apps since the encoding info is lost, but it proves that the content was not stored uncompressed and therefore was stored compressed
+  end
+
+  def test_stores_uncompressed_files_if_given_incompressible_uncompressed_content
+    content, type = "non-repetitive data", "text/plain"
+    location = @client.store("/autocompress/", content, type)
+    assert_equal [content, type], @client.load(location) # will get auto-decompressed by ruby; proves just that the content was stored
+    assert_equal [content, type], @client.load(location, 'Accept-Encoding' => 'gzip') # reverse of above; implies the content was stored uncompressed
+  end
+
   def test_loads_content_and_type
     content, type = "this is a test", "text/plain"
     assert_equal [content, type],
