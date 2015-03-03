@@ -38,7 +38,7 @@ Retrieving content
 ```ruby
 VERM_CLIENT = Verm::Client.new("my-verm-server")
 
-file, content_type = VERM_CLIENT.load("/important_gifs/january/ab/cdefgh.jpg")
+data, content_type = VERM_CLIENT.load("/important_gifs/january/ab/cdefgh.jpg")
 ```
 
 This basically does the same thing as the built-in Net::HTTP get method (aside from timeouts, error handling, etc.):
@@ -52,8 +52,8 @@ So you really don't need a client library for this - but it's usually more conv
 Verm stores all content without touching its character encoding, but Ruby 1.9+ treats all strings as having a specific character encoding.  Most applications use UTF-8 for all text, so by default, the `load` method will set the character encoding of `text/*` content returned by Verm to `UTF-8`.  You can override this or disable it entirely:
 
 ```ruby
-file, content_type = VERM_CLIENT.load("/important_gifs/january/ab/cdefgh.csv", force_encoding: 'ISO-8859-1')
-file, content_type = VERM_CLIENT.load("/important_gifs/january/ab/cdefgh.csv", force_encoding: nil)
+data, content_type = VERM_CLIENT.load("/important_gifs/january/ab/cdefgh.csv", force_encoding: 'ISO-8859-1')
+data, content_type = VERM_CLIENT.load("/important_gifs/january/ab/cdefgh.csv", force_encoding: nil)
 ```
 
 
@@ -93,7 +93,7 @@ It's important to note that Ruby's Net::HTTP client will automatically uncompres
 You can suppress that behavior by passing `Accept-Encoding: gzip` as a header (Net::HTTP would accept gzip anyway, but setting this header has the side effect of disabling uncompression):
 
 ```ruby
-file, content_type = VERM_CLIENT.load("/third_party_files/acme/2015/ab/cdefgh.csv", 'Accept-Encoding' => 'gzip')
+data, content_type = VERM_CLIENT.load("/third_party_files/acme/2015/ab/cdefgh.csv", 'Accept-Encoding' => 'gzip')
 ```
 
 
