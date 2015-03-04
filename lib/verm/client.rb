@@ -77,8 +77,11 @@ module Verm
       compressed = StringIO.new
       compressed.set_encoding("BINARY")
       gz = Zlib::GzipWriter.new(compressed)
-      gz.write(io_or_data)
-      gz.close
+      begin
+        gz.write(io_or_data)
+      ensure # minimize finalizer whining
+        gz.close
+      end
       output = compressed.string
       return output, "gzip" if output.bytesize < io_or_data.bytesize
       io_or_data
