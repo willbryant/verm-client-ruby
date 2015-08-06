@@ -113,3 +113,20 @@ VERM_CLIENT = Verm::Client.new("my-verm-server", timeout: 60)
 ```
 
 Like Net::HTTP, this timeout applies to individual network operations, not the whole method.
+
+
+Reusing connections
+-------------------
+
+By default, Ruby's Net::HTTP client will open a new connection for each request.  This makes it very safe with regards to forking or threading, but it can become a bottleneck if you are doing a bulk upload or download from Verm.  You can explicitly start a connection to work around this:
+
+```ruby
+VERM_CLIENT.http_client.start do
+  100.times do
+    VERM_CLIENT.store(...)
+    VERM_CLIENT.load(...)
+  end
+end
+```
+
+If you'd like to use another gem that manages connection reuse automatically, note that you can also substitute any HTTP client class that supports the Net::HTTP API, by providing the `http_class` option to `Verm::Client.new`.

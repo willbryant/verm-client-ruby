@@ -120,4 +120,15 @@ class TestVerm < Minitest::Test
     assert_equal uncompressed_content, result
     assert chunks > 1, "should have been given the content in multiple chunks"
   end
+
+  def test_reuses_socket_under_start
+    @client.http_client.start do
+      content, type = "this is a test", "text/plain"
+      assert_equal [content, type], @client.load(@client.store("/test/files_to_load", content, type))
+      @socket = @client.http_client.instance_variable_get("@socket")
+
+      assert_equal [content, type], @client.load(@client.store("/test/files_to_load", content, type))
+      assert_equal @socket, @client.http_client.instance_variable_get("@socket")
+    end
+  end
 end

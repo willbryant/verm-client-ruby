@@ -8,8 +8,8 @@ module Verm
 
     attr_reader :http_client
 
-    def initialize(hostname, port: 3404, timeout: 15)
-      @http_client = Net::HTTP.new(hostname, port)
+    def initialize(hostname, port: 3404, timeout: 15, http_class: Net::HTTP)
+      @http_client = http_class.new(hostname, port)
       @http_client.open_timeout = timeout
       @http_client.read_timeout = timeout
       @http_client.ssl_timeout = timeout
