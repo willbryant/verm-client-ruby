@@ -1,3 +1,5 @@
+require 'verm/http_no_delay'
+
 module Verm
   class Client
     def self.incompressible_types
